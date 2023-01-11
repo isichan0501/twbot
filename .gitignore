@@ -1,0 +1,13 @@
+__pycache__/
+db/
+img/
+logs/
+.env
+*.json
+ChromeProfile/
+secrets/
+logs/
+*.jpg
+*.jpeg
+*.png
+*.txt
