@@ -1442,30 +1442,30 @@ class TwitterFrontendFlow:
 def check_shadowban(screen_name):
 
     cookies = {
-        '_ga_4E8SDFWKN5': 'GS1.1.1669633608.1.0.1669633608.0.0.0',
-        '_ga': 'GA1.2.1479150603.1669633609',
-        '_gid': 'GA1.2.1288539343.1669633609',
+        '_gid': 'GA1.2.1399265878.1674472457',
+        '__gads': 'ID=2a257c6972d3a938-22ac9d1064d90085:T=1674472455:RT=1674472455:S=ALNI_Mau0agcOSgtJeQ1C5V3SRzscuwyaQ',
+        '__gpi': 'UID=00000bab20f9a241:T=1674472455:RT=1674472455:S=ALNI_MbJX_ruQyt1KNwcWzL7C3EjB153jQ',
+        '_ga': 'GA1.2.1728721209.1674472456',
         '_gat_gtag_UA_202220676_1': '1',
-        '__gads': 'ID=c589bfc8c8066f7b-22feefe0abd8009f:T=1669633608:RT=1669633608:S=ALNI_Map5heMU212-gSYSxM7lS4DO-oGmg',
-        '__gpi': 'UID=00000b856b7b2b20:T=1669633608:RT=1669633608:S=ALNI_MYBpmGUeJ2vZ-__Foiy2SGgZgt0iA',
-        'FCNEC': '%5B%5B%22AKsRol8IQ5YxG-cXUCxav6OZ2n6gpHSIq7m55sLr3T4g1p-KZj8cQO71VUDId1OG8L9b9wMXj8X0nQobgUnYkGr3hS-XOew3neAqc9iSm4nkZdYrbJ0cTLt2HvAbE-7yGWDQgBA3jTyoAcOAXS40HYLwUjFnyzKDIA%3D%3D%22%5D%2Cnull%2C%5B%5D%5D',
+        '_ga_4E8SDFWKN5': 'GS1.1.1674474354.2.1.1674474473.0.0.0',
+        'FCNEC': '%5B%5B%22AKsRol8i2Me0fF1g6CIatYeLVrph9sskVf_N7lPcfwRf7Lf3MujY9EfU5x62xxKMUUzg22Wk74MZiy1juRpuLv0g9mM4d3QfzaiA_63gsG1MyN1rtpMpyrisdpMqrjqG52q_DiDtF-rdPZ5xrwp9V7ypK4_luVbNcg%3D%3D%22%5D%2Cnull%2C%5B%5D%5D',
     }
 
     headers = {
         'authority': 'taishin-miyamoto.com',
         'accept': '*/*',
         'accept-language': 'ja',
-        # Requests sorts cookies= alphabetically
-        # 'cookie': '_ga_4E8SDFWKN5=GS1.1.1669633608.1.0.1669633608.0.0.0; _ga=GA1.2.1479150603.1669633609; _gid=GA1.2.1288539343.1669633609; _gat_gtag_UA_202220676_1=1; __gads=ID=c589bfc8c8066f7b-22feefe0abd8009f:T=1669633608:RT=1669633608:S=ALNI_Map5heMU212-gSYSxM7lS4DO-oGmg; __gpi=UID=00000b856b7b2b20:T=1669633608:RT=1669633608:S=ALNI_MYBpmGUeJ2vZ-__Foiy2SGgZgt0iA; FCNEC=%5B%5B%22AKsRol8IQ5YxG-cXUCxav6OZ2n6gpHSIq7m55sLr3T4g1p-KZj8cQO71VUDId1OG8L9b9wMXj8X0nQobgUnYkGr3hS-XOew3neAqc9iSm4nkZdYrbJ0cTLt2HvAbE-7yGWDQgBA3jTyoAcOAXS40HYLwUjFnyzKDIA%3D%3D%22%5D%2Cnull%2C%5B%5D%5D',
+        # 'cookie': '_gid=GA1.2.1399265878.1674472457; __gads=ID=2a257c6972d3a938-22ac9d1064d90085:T=1674472455:RT=1674472455:S=ALNI_Mau0agcOSgtJeQ1C5V3SRzscuwyaQ; __gpi=UID=00000bab20f9a241:T=1674472455:RT=1674472455:S=ALNI_MbJX_ruQyt1KNwcWzL7C3EjB153jQ; _ga=GA1.2.1728721209.1674472456; _gat_gtag_UA_202220676_1=1; _ga_4E8SDFWKN5=GS1.1.1674474354.2.1.1674474473.0.0.0; FCNEC=%5B%5B%22AKsRol8i2Me0fF1g6CIatYeLVrph9sskVf_N7lPcfwRf7Lf3MujY9EfU5x62xxKMUUzg22Wk74MZiy1juRpuLv0g9mM4d3QfzaiA_63gsG1MyN1rtpMpyrisdpMqrjqG52q_DiDtF-rdPZ5xrwp9V7ypK4_luVbNcg%3D%3D%22%5D%2Cnull%2C%5B%5D%5D',
         'referer': 'https://taishin-miyamoto.com/ShadowBan/',
-        'sec-ch-ua': '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
+        'sec-ch-ua': '"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"',
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
         'sec-fetch-dest': 'empty',
         'sec-fetch-mode': 'cors',
         'sec-fetch-site': 'same-origin',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
     }
+
 
     params = {
         'screen_name': screen_name,

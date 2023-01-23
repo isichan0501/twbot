@@ -39,19 +39,21 @@ import string
 from colorama import Back, Fore
 from os import path
 import requests
-from add_proxy import get_proxy_extension
+from .add_proxy import get_proxy_extension
 from fake_headers import Headers
 import platform
 import pysnooper
 from contextlib import contextmanager
 import shutil
 import tempfile
+import re
+import emoji
 import json
 from pathlib import Path
 
 
-from util_sms import Sms, CountryExpress
-from line_notify import line_push
+from .util_sms import Sms, CountryExpress
+from .line_notify import line_push
 
 from dotenv import load_dotenv
 
@@ -61,6 +63,74 @@ apikey = os.getenv('SMSHUB_API_KEY')
 
 
 
+def modify_proxy(prox):
+    prox = prox.strip()
+    px = prox.split(':')
+    prx  = "http://{}:{}@{}:{}".format(px[2],px[3],px[0],px[1])
+    return prx
+
+
+def get_proxy_list(file_path='proxy.txt'):
+    with open(file_path, mode='r', encoding='utf-8') as f:
+        proxys = [prox.strip() for prox in f.readlines()]
+    return proxys
+    
+
+def check_ip_with_requests():
+
+    try:
+        response = requests.get('http://jsonip.com', timeout=20)
+        ip = response.json()['ip']
+        print('Your public IP is:', ip)
+        return True
+    except Exception:
+        print('proxy set error.return False')
+        return False
+
+
+def set_random_proxy():
+    proxys = [modify_proxy(x) for x in get_proxy_list()]
+    del_env = os.environ.pop('http_proxy', None)
+    del_env = os.environ.pop('https_proxy', None)
+    time.sleep(1)
+    proxy = random.choice(proxys)
+
+    #proxy用ー失敗するからコメントアウト
+    os.environ['http_proxy'] = proxy
+    os.environ['https_proxy'] = proxy
+    is_proxy = check_ip_with_requests()
+    return proxy if is_proxy else is_proxy
+    
+
+
+# ID:PW:email:emailpwのアカウントリストを返す
+def get_accounts(file_path='account.txt'):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = [x.strip() for x in f.readlines()]
+
+    return data
+
+def write_accounts(accounts):
+    file_path='account.txt'
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(accounts))
+
+def modify_account(account):
+    print(f'start @{account}')
+    account = account.split(':')
+    mydict = {
+        'screen_name': account[0],
+        'password': account[1],
+        'email': account[2],
+        'email_pw': account[3],
+        'filepath': './db/{}.json'.format(account[0]),
+        }
+
+    if 4 < len(account):
+        mydict['phone'] = account[4]
+    if 5 < len(account):
+        mydict['auth_token'] = account[5]
+    return mydict
 
 class ProxyExtension:
     manifest_json = """
@@ -243,6 +313,160 @@ def exe_click(driver, by, desc):
         print(ex)
         raise
 
+def emoji_convert(texts):
+    mytxt = texts
+    for _ in range(20):
+        if re.search(r':[a-z]+[^:]+[a-z]:', mytxt):
+            emj = re.search(r':[a-z]+[^:]+[a-z]:', mytxt)
+            if emj:
+                myemj = emj.group()
+                mytxt = mytxt.replace(
+                    emj, emoji.emojize(myemj, use_aliases=True))
+            continue
+        else:
+            return mytxt
+
+
+def my_emojiSend(driver, by, desc, my_word):
+    wait = WebDriverWait(driver, 10)
+    time.sleep(1)
+    INPUT_EMOJI = """
+    arguments[0].value += arguments[1];
+    arguments[0].dispatchEvent(new Event('change'));
+    """
+
+    try:
+        by = by.upper()
+        if by == 'XPATH':
+            wait.until(EC.element_to_be_clickable(
+                (By.XPATH, desc))).clear()
+            element = driver.find_element(By.XPATH, desc)
+            mytext = emoji_convert(my_word)
+            driver.execute_script(INPUT_EMOJI, element, mytext)
+            element.send_keys(" ")
+
+        if by == 'ID':
+            wait.until(EC.element_to_be_clickable((By.ID, desc))).clear()
+            element = driver.find_element(By.ID, desc)
+            mytext = emoji_convert(my_word)
+            driver.execute_script(INPUT_EMOJI, element, mytext)
+            element.send_keys(" ")
+        if by == 'LINK_TEXT':
+            wait.until(EC.element_to_be_clickable(
+                (By.LINK_TEXT, desc))).clear()
+            element = driver.find_element(By.LINK_TEXT, desc)
+            mytext = emoji_convert(my_word)
+            driver.execute_script(INPUT_EMOJI, element, mytext)
+            element.send_keys(" ")
+        if by == "NAME":
+            wait.until(EC.element_to_be_clickable((By.NAME, desc))).clear()
+            element = driver.find_element(By.NAME,  desc)
+            mytext = emoji_convert(my_word)
+            driver.execute_script(INPUT_EMOJI, element, mytext)
+            element.send_keys(" ")
+        if by == "TAG_NAME":
+            wait.until(EC.element_to_be_clickable(
+                (By.TAG_NAME, desc))).clear()
+            element = driver.find_element(By.NAME, desc)
+            mytext = emoji_convert(my_word)
+            driver.execute_script(INPUT_EMOJI, element, mytext)
+            element.send_keys(" ")
+        if by == "CSS_SELECTOR":
+            wait.until(EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, desc))).clear()
+            element = driver.find_element(By.CSS_SELECTOR, desc)
+            mytext = emoji_convert(my_word)
+            driver.execute_script(INPUT_EMOJI, element, mytext)
+            element.send_keys(" ")
+        if by == 'OK':
+            element = desc
+            element.clear()
+            mytext = emoji_convert(my_word)
+            driver.execute_script(INPUT_EMOJI, element, mytext)
+            element.send_keys(" ")
+
+    except (socket.timeout, NoSuchElementException, TimeoutException, Exception) as ex:
+        print(ex)
+
+
+def check_if_not(driver, by, desc):
+    driver.implicitly_wait(2)
+    try:
+        by = by.upper()
+        if by == 'XPATH':
+            elem = driver.find_element(By.XPATH, desc)
+            if not elem.is_selected():
+                elem.click()
+        if by == 'ID':
+            elem = driver.find_element(By.ID, desc)
+            if not elem.is_selected():
+                elem.click()
+        if by == 'LINK_TEXT':
+            elem = driver.find_element(By.LINK_TEXT, desc)
+            if not elem.is_selected():
+                elem.click()
+        if by == "NAME":
+            elem = driver.find_element(By.NAME, desc)
+            if not elem.is_selected():
+                elem.click()
+        if by == "TAG_NAME":
+            elem = driver.find_element(By.TAG_NAME, desc)
+            if not elem.is_selected():
+                elem.click()
+        if by == "CSS_SELECTOR":
+            elem = driver.find_element(By.CSS_SELECTOR, desc)
+            if not elem.is_selected():
+                elem.click()
+        if by == "OK":
+            if not desc.is_selected():
+                desc.click()
+    except (socket.timeout, NoSuchElementException, TimeoutException, Exception, ElementNotInteractableException) as ex:
+        print(ex)
+
+    finally:
+        driver.implicitly_wait(5)
+
+
+def action_click(driver, elem):
+    # elemは(By.XPATH, 'xpath')のようなタプル
+    waitn = WebDriverWait(driver, 5)
+    try:
+        elem = waitn.until(EC.element_to_be_clickable(elem))
+        webdriver.ActionChains(driver).move_to_element(elem).click().perform()
+    except (socket.timeout, NoSuchElementException, TimeoutException, Exception) as ex:
+        print(ex)
+
+
+def wifi_reboot(driver, passwd='admin'):
+    try:
+        page_load(driver,"http://web.setting/html/home.html")
+        myClick(driver, "id", "settings")
+        time.sleep(2)
+        # import pdb; pdb.set_trace()
+        myClick(driver, "id", "password")
+        time.sleep(1)
+        mySendkey(driver,"id","password",passwd)
+        time.sleep(1)
+        exe_click(driver, "link_text", "ログイン")
+        time.sleep(2)
+        if driver.current_url != "http://web.setting/html/quicksetup.html":
+            exe_click(driver, "link_text", "ログイン")
+            time.sleep(2)
+        driver.refresh()
+        time.sleep(3)
+        myClick(driver, "id", "system")
+        myClick(driver, "link_text", "再起動")
+        time.sleep(2)
+        exe_click(driver, "id", "button_reboot")
+        # myClick(driver, "css", ".button_center")
+        time.sleep(2)
+        exe_click(driver, "link_text", "はい")
+        time.sleep(3)
+        wait_str = driver.find_element(By.ID, "wait_table").text
+        print(wait_str)
+        time.sleep(5)
+    except (socket.timeout, NoSuchElementException, TimeoutException, Exception) as e:
+        print(e)
 
 
 @pysnooper.snoop()
@@ -282,9 +506,12 @@ def start_driver(prox=None):
     # setting profile
     # option.user_data_dir = "C:\\temp\\profile"
     option.add_argument('--user-data-dir=C:\\temp\\profile1')
+    # option.add_argument("--enable-javascript")
     # option.add_argument('--profile-directory=Profile1')
 
-    
+    # option.add_argument('--no-first-run --no-service-autorun --password-store=basic')
+    # option.add_argument("--proxy-bypass-list:localhost,127.0.0.1")
+    # option.add_argument('--no-default-browser-check')
     option.add_argument("--mute-audio")
     option.add_argument('--allow-file-access-from-files')
     # option.add_argument('--disable-web-security')
@@ -322,7 +549,7 @@ def start_driver(prox=None):
     ch_r = [os.path.join(os.path.abspath(os.path.dirname(__file__))), 'ifibfemgeogfhoebkmokieepdoobkbpo', '3.3.0_0']
     crxpath = os.path.join(*ch_r)
     # option.add_argument('--load-extension={}'.format(crxpath))
-    option.add_argument('--load-extension=C:\\Users\\sibuy\\anaconda3\\envs\\py39\Scripts\\\TwitterFrontendFlow\\ifibfemgeogfhoebkmokieepdoobkbpo\\3.3.0_0')
+    # option.add_argument('--load-extension=C:\\Users\\sibuy\\anaconda3\\envs\\py39\Scripts\\\TwitterFrontendFlow\\ifibfemgeogfhoebkmokieepdoobkbpo\\3.3.0_0')
     
     if prox:
         PROXY_HOST, PROXY_PORT, PROXY_USER, PROXY_PASS = prox.split(':')
@@ -387,9 +614,7 @@ def unlock_outlook(prox, email, email_pw, country_exp="ロシア"):
     service = 'mm'
     sms = Sms(apikey)
     #----outlook login----
-    # prox = "geo.iproyal.com:42324:isichan51:takt7777_country-ru_session-f7iu9n60_lifetime-30m"
-    # email="rukamiotkei@hotmail.com"
-    # emailpw="ue4lMK41"
+
     try:
         driver = start_driver(prox=prox)
         driver.get('https://outlook.live.com/owa/logoff.owa')
@@ -478,25 +703,6 @@ def twitter_login(prox, screen_name, password):
         print(e)
         driver.quit()
 
-
-
-def get_proxy_list(file_path='proxy.txt'):
-    with open(file_path, mode='r', encoding='utf-8') as f:
-        proxys = [prox.strip() for prox in f.readlines()]
-    return proxys
-
-
-# ID:PW:email:emailpwのアカウントリストを返す
-def get_accounts(file_path='account.txt'):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        data = [x.strip() for x in f.readlines()]
-
-    return data
-
-def write_accounts(accounts):
-    file_path='account.txt'
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(accounts))
 
 @pysnooper.snoop()
 def submit_login_button(driver):
@@ -646,9 +852,6 @@ def input_phone(driver, country_exp):
             JavascriptException,NoAlertPresentException,StaleElementReferenceException,UnexpectedAlertPresentException,NoSuchElementException,Exception) as e:
         print(e)
         return False
-
-
-
 
 
 
